@@ -9,9 +9,9 @@ import importlib
 
 
 def get_symbol():
-    net = importlib.import_module('symbol_' + config.network).get_symbol(config.num_classes)
-    if "pretrained_model" in config and config.pretrained_model and "pretrained_epoch" in config and config.pretrained_epoch:
-        model, arg_params, aux_params = mx.model.load_checkpoint(config.pretrained_model, config.load_epoch)
+    net = importlib.import_module('cnncommic.symbol_' + config.network).get_symbol(config.num_classes)
+    if "pretrained_model" in config.__dict__ and config.pretrained_model and "pretrained_epoch" in config.__dict__ and config.pretrained_epoch:
+        model, arg_params, aux_params = mx.model.load_checkpoint(config.pretrained_model, config.pretrained_epoch)
         internals = model.get_internals()
         fea_symbol = internals["flatten_output"]
         fc_l = mx.symbol.FullyConnected(data=fea_symbol, name='fc_l', num_hidden=config.num_classes)
@@ -24,7 +24,7 @@ def get_symbol():
 def get_iterator(args, kv):
     data_shape = (3, args.data_shape, args.data_shape)
     train = mx.io.ImageRecordIter(
-        path_imgrec = os.path.join(args.data_dir, args.batch_size),
+        path_imgrec = os.path.join(args.data_dir, args.train_dataset),
         mean_r      = 123.68,
         mean_g      = 116.779,
         mean_b      = 103.939,
@@ -55,7 +55,7 @@ def fit(args, network, data_loader, batch_end_callback=None):
 
     # logging
     head = '%(asctime)-15s Node[' + str(kv.rank) + '] %(message)s'
-    if 'log_file' in args and args.log_file is not None:
+    if 'log_file' in args.__dict__ and args.log_file is not None:
         log_file = args.log_file
         log_dir = args.log_dir
         log_file_full_name = os.path.join(log_dir, log_file)
@@ -73,20 +73,20 @@ def fit(args, network, data_loader, batch_end_callback=None):
         logging.info('start with arguments %s', args)
 
     # load model
-    model_prefix = args.model_prefix
-    if model_prefix is not None:
-        model_prefix += "-%d" % (kv.rank)
+    #model_prefix = args.model_prefix
+    #if model_prefix is not None:
+    #    model_prefix += "-%d" % (kv.rank)
     model_args = {}
-    if args.load_epoch is not None:
-        assert model_prefix is not None
-        tmp = mx.model.FeedForward.load(model_prefix, args.load_epoch)
-        model_args = {'arg_params' : tmp.arg_params,
-                      'aux_params' : tmp.aux_params,
-                      'begin_epoch' : args.load_epoch}
+    #if args.load_epoch is not None:
+    #    assert model_prefix is not None
+    #    tmp = mx.model.FeedForward.load(model_prefix, args.load_epoch)
+    #    model_args = {'arg_params' : tmp.arg_params,
+    #                  'aux_params' : tmp.aux_params,
+    #                  'begin_epoch' : args.load_epoch}
     # save model
     save_model_prefix = args.save_model_prefix
-    if save_model_prefix is None:
-        save_model_prefix = model_prefix
+    #if save_model_prefix is None:
+    #    save_model_prefix = model_prefix
     checkpoint = None if save_model_prefix is None else mx.callback.do_checkpoint(save_model_prefix)
 
     # data
@@ -102,12 +102,12 @@ def fit(args, network, data_loader, batch_end_callback=None):
         epoch_size /= kv.num_workers
         model_args['epoch_size'] = epoch_size
 
-    if 'lr_factor' in args and args.lr_factor < 1:
+    if 'lr_factor' in args.__dict__ and args.lr_factor < 1:
         model_args['lr_scheduler'] = mx.lr_scheduler.FactorScheduler(
             step = max(int(epoch_size * args.lr_factor_epoch), 1),
             factor = args.lr_factor)
 
-    if 'clip_gradient' in args and args.clip_gradient is not None:
+    if 'clip_gradient' in args.__dict__ and args.clip_gradient is not None:
         model_args['clip_gradient'] = args.clip_gradient
 
     # disable kvstore for single device

@@ -9,8 +9,6 @@ network training by reducing internal covariate shift. arXiv preprint
 arXiv:1502.03167, 2015.
 
 """
-
-import find_mxnet
 import mxnet as mx
 
 def ConvFactory(data, num_filter, kernel, stride=(1,1), pad=(0, 0), name=None, suffix=''):

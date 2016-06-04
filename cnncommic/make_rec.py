@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import os
 import random
 from PIL import Image
@@ -33,12 +34,12 @@ def write_list(path_out, image_list):
 
 def write_cat_map(path_out, cat):
     with open(path_out, 'w') as fout:
-        for path, cat_index in cat.xitems():
+        for path, cat_index in cat.items():
             fout.write("{0}\t{1}\n".format(cat_index, path))
 
 
-def make_list(prefix_out, root, recursive, exts, num_chunks, train_ratio):
-    image_list = list_image(root, recursive, exts)
+def make_list(prefix_out, root, exts, num_chunks, train_ratio):
+    image_list, cat_map = list_image(root, exts)
     random.shuffle(image_list)
     N = len(image_list)
     chunk_size = (N+num_chunks-1)/num_chunks
@@ -54,6 +55,7 @@ def make_list(prefix_out, root, recursive, exts, num_chunks, train_ratio):
             write_list(prefix_out+str_chunk+'_val.lst', chunk[sep:])
         else:
             write_list(prefix_out+str_chunk+'.lst', chunk)
+        write_cat_map(prefix_out+ "_cat_map.txt", cat_map)
 
 
 def read_list(path_in):
@@ -66,13 +68,13 @@ def read_list(path_in):
     return image_list
 
 
-def write_record(image_list, rec_file_name):
+def write_record(root, image_list, rec_file_name):
 
     def image_encode(item):
         try:
-            img = Image.open(item[1])
+            img = Image.open(os.path.join(root, item[1]))
             img = img.convert('RGB')
-        except:
+        except Exception as e:
             print 'read none error:', item[1]
             return
         short_egde = min(img.size)
@@ -83,11 +85,10 @@ def write_record(image_list, rec_file_name):
         resized_img = crop_img.resize(size=(224,224))
         header = mx.recordio.IRHeader(0, item[2], item[0], 0)
         sample = np.asarray(resized_img)
-        sample = sample.resize(1, 3, 224, 224)
         try:
             s = mx.recordio.pack_img(header, sample, quality=100, img_fmt=".jpg")
             return s
-        except:
+        except Exception as e:
             print 'pack_img error:', item[1]
 
     record = mx.recordio.MXRecordIO(rec_file_name, 'w')
