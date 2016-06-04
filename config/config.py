@@ -5,7 +5,7 @@ USE_GPU = False
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 data_dir = os.path.join(base_path, "data")
-model_dir = os.path.join(data_dir, "model")
+model_dir = os.path.join(base_path, "model")
 
 if not os.path.exists(data_dir):
     os.mkdir(data_dir)
