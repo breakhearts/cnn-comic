@@ -1,7 +1,53 @@
-import find_mxnet
+from __future__ import absolute_import
 import mxnet as mx
 import logging
 import os
+from config import config
+
+
+import importlib
+
+
+def get_symbol():
+    net = importlib.import_module('symbol_' + config.network).get_symbol(config.num_classes)
+    if "pretrained_model" in config and config.pretrained_model and "pretrained_epoch" in config and config.pretrained_epoch:
+        model, arg_params, aux_params = mx.model.load_checkpoint(config.pretrained_model, config.load_epoch)
+        internals = model.get_internals()
+        fea_symbol = internals["flatten_output"]
+        fc_l = mx.symbol.FullyConnected(data=fea_symbol, name='fc_l', num_hidden=config.num_classes)
+        softmax = mx.symbol.SoftmaxOutput(data=fc_l, name='softmax')
+        net = softmax
+    return net
+
+
+# data
+def get_iterator(args, kv):
+    data_shape = (3, args.data_shape, args.data_shape)
+    train = mx.io.ImageRecordIter(
+        path_imgrec = os.path.join(args.data_dir, args.batch_size),
+        mean_r      = 123.68,
+        mean_g      = 116.779,
+        mean_b      = 103.939,
+        data_shape  = data_shape,
+        batch_size  = args.batch_size,
+        rand_crop   = True,
+        rand_mirror = True,
+        num_parts   = kv.num_workers,
+        part_index  = kv.rank)
+
+    val = mx.io.ImageRecordIter(
+        path_imgrec = os.path.join(args.data_dir, args.val_dataset),
+        mean_r      = 123.68,
+        mean_g      = 116.779,
+        mean_b      = 103.939,
+        rand_crop   = False,
+        rand_mirror = False,
+        data_shape  = data_shape,
+        batch_size  = args.batch_size,
+        num_parts   = kv.num_workers,
+        part_index  = kv.rank)
+    return (train, val)
+
 
 def fit(args, network, data_loader, batch_end_callback=None):
     # kvstore
@@ -98,3 +144,8 @@ def fit(args, network, data_loader, batch_end_callback=None):
         kvstore            = kv,
         batch_end_callback = batch_end_callback,
         epoch_end_callback = checkpoint)
+
+
+# train
+if __name__ == "__main__":
+    fit(config, get_symbol(), get_iterator)
