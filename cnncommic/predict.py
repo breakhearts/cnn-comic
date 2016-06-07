@@ -48,6 +48,5 @@ def predict_file(model, filename):
     batch = get_image_array(filename)
     prob = model.predict(batch)[0]
     pred = np.argsort(prob)[::-1]
-    t = zip(pred, prob)
-    t.sort(cmp=lambda x, y: int(y[1] * 1000 - x[1] * 1000))
+    t = [(x, prob[x]) for x in pred]
     return t
