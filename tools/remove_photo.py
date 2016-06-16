@@ -36,11 +36,11 @@ def split_photo(model_prefix, model_round, img_root, photo_root, ctx = mx.gpu())
                 print t
                 if t[0][0] == PHOTO:
                     dst = os.path.dirname(os.path.join(photo_root, os.path.relpath(fp, img_root)))
-                    wise_mk_dir(dst)
+                    #wise_mk_dir(dst)
                     print "Move {0} to {1}".format(fp, dst)
-                    shutil.move(fp, dst)
+                    #shutil.move(fp, dst)
             except:
                 print "error"
 
 if __name__ == "__main__":
-    split_photo("../model/cartoon", 30, "d:/data", "d:/data_photo")
+    split_photo("../model/cartoon", 30, r"D:\cartoon_test\photo", "d:/data_photo")

@@ -57,7 +57,7 @@ def query_img(root, q):
         }
         count = 0
         while count < 1000:
-            url = 'http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&queryWord=ss&cl=2&lm=-1&ie=utf-8&oe=utf-8&adpicid=&st=&z=&ic=&word={0}&s=&se=&tab=&width=&height=&face=&istype=&qc=&nc=1&fr=&pn={1}&rn={2}&gsm=1fe&1463479205503='.format(urllib.quote(query), pn, rn)
+            url = 'http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&queryWord=ss&cl=2&lm=-1&ie=utf-8&oe=utf-8&adpicid=&st=&z=&ic=&word={0}&s=&se=&tab=&width=&height=&face=&istype=&qc=&nc=1&fr=&pn={1}&rn={2}&gsm=1fe&1463479205503='.format(urllib.quote(query + "+动画"), pn, rn)
             try:
                 r = request_with_ua(url)
             except:

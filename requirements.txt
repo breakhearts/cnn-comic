@@ -2,4 +2,3 @@ mxnet
 lxml
 requests
 pillow
-cv2
